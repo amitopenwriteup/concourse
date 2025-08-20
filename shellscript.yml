@@ -6,7 +6,6 @@ resources:
   source:
     interval: 30s
 
-resources:
 - name: scripts
   type: git
   source:
@@ -21,6 +20,7 @@ jobs:
   plan:
   - get: every-30s
     trigger: true
+  - get: scripts
   - task: simple-task
     config:
       platform: linux
