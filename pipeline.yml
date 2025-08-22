@@ -1,0 +1,66 @@
+resources:
+- name: shared-artifact
+  type: mock   # or s3/git/registry-image depending on your real use case
+  source: {}
+
+jobs:
+- name: make-a-file
+  plan:
+  - task: make-a-file
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: { repository: busybox }
+      run:
+        path: sh
+        args:
+          - -exc
+          - echo "Created a file on $(date)" > ./files/created_file
+      outputs:
+        - name: files
+  - put: shared-artifact
+    params:
+      file: files/created_file
+
+- name: consume-the-file
+  plan:
+  - get: shared-artifact
+    trigger: true
+    passed: [make-a-file]   # depends on make-a-file finishing
+  - task: consume
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: { repository: busybox }
+      inputs:
+        - name: shared-artifact
+      run:
+        path: sh
+        args:
+          - -exc
+          - cat shared-artifact
+
+- name: make-a-file-again
+  plan:
+  - get: shared-artifact
+    trigger: true
+    passed: [consume-the-file]   #  wait until consume is done
+  - task: make-a-file-again
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: { repository: busybox }
+      run:
+        path: sh
+        args:
+          - -exc
+          - echo "Second run on $(date)" > ./files/created_file
+      outputs:
+        - name: files
+  - put: shared-artifact
+    params:
+      file: files/created_file
+

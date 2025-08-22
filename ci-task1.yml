@@ -1,0 +1,57 @@
+resource_types:
+- name: registry-image
+  type: registry-image
+  source:
+    repository: concourse/registry-image-resource
+
+resources:
+- name: my-repo
+  type: git
+  source:
+    uri: https://github.com/amitopenwriteup/concourse.git
+    branch: main
+
+jobs:
+- name: hello-world
+  plan:
+  - get: my-repo
+    trigger: true
+  - task: say-hello
+    input_mapping: {repo: my-repo}
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: { repository: alpine }
+      inputs:
+      - name: repo
+      run:
+        path: sh
+        args:
+          - -exc
+          - |
+            echo "Hello, world!"
+            ls -l repo
+
+- name: date-world
+  plan:
+  - get: my-repo
+    trigger: false
+  - task: print-date
+    input_mapping: {repo: my-repo}
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: { repository: alpine }
+      inputs:
+      - name: repo
+      run:
+        path: sh
+        args:
+          - -exc
+          - |
+            echo "Today's date is:"
+            date
+            ls -l repo
+

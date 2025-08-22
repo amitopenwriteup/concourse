@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 resources:
   - name: hello-repo
     type: git
@@ -31,3 +32,22 @@ jobs:
                 echo "Contents of hello-repo directory:"
                 ls -al hello-repo
                 echo "Hello from Concourse Pipeline!"
+=======
+resource_types:
+- name: registry-image
+  type: registry-image
+  source:
+    repository: concourse/registry-image-resource
+
+jobs:
+- name: hello-world
+  plan:
+  - task: say-hello
+    config:
+      platform: linux
+      image_resource:
+        source: { repository: alpine }
+      run:
+        path: echo
+        args: ["Hello, world!"]
+>>>>>>> 94bffb3 (add)

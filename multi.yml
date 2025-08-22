@@ -1,0 +1,25 @@
+resource_types:
+- name: registry-image
+  type: registry-image
+  source:
+    repository: concourse/registry-image-resource
+jobs:
+- name: hello-world
+  plan:
+  - task: say-hello
+    config:
+      platform: linux
+      image_resource:
+        source: { repository: alpine }
+      run:
+        path: echo
+        args: ["Hello, world!"]
+- name: date-world
+  plan:
+  - task: say-hello
+    config:
+      platform: linux
+      image_resource:
+        source: { repository: alpine }
+      run:
+        path: date

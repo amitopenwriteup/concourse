@@ -1,0 +1,56 @@
+resource_types:
+- name: registry-image
+  type: registry-image
+  source:
+    repository: concourse/registry-image-resource
+
+resources:
+  # Git repo
+  - name: app-repo
+    type: git
+    source:
+      uri: https://github.com/amitopenwriteup/javadockerproject.git
+      branch: main
+
+  # Local Docker registry resource
+  - name: app-image
+    type: registry-image
+    source:
+      repository: localhost:5000/my-app
+      tag: latest
+
+jobs:
+# Step 1: Build + Push Docker image
+- name: docker-build
+  plan:
+  - get: app-repo
+    trigger: true
+
+  - put: app-image
+    params:
+      build_context: app-repo   # assumes Dockerfile is inside repo
+
+# Step 2: Trivy Scan
+- name: trivy-scan
+  plan:
+  - get: app-image
+    passed: [docker-build]
+    trigger: true
+
+  - task: scan
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: { repository: alpine }
+      run:
+        path: sh
+        args:
+          - -exc
+          - |
+            apk add --no-cache curl bash docker-cli
+            curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+
+            echo "🔍 Scanning image localhost:5000/my-app:latest"
+            trivy image localhost:5000/my-app:latest
+
