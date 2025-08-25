@@ -251,7 +251,7 @@ concourse:
     ##
     ## Example: http://ci.concourse-ci.org
     ##
-    externalUrl: https://8b49a1def544.ngrok-free.app
+    externalUrl: 
 
     encryption:
       ## Enable encryption of pipeline configuration. Encryption keys can be set via secrets
