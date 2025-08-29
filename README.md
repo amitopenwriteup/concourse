@@ -1,4 +1,3 @@
-Perfect 👍 I can now see the structure of your `concourse` repo from the screenshot:
 
 * `pipeline.yml`
 * `ci-task.yml`, `ci-task1.yml`
